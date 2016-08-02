@@ -1,0 +1,200 @@
+
+<!doctype HTML>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Fraction Finder</title
+		<meta name="description" content="Find nearest whole fraction from decimal">
+		<script src="https://d3js.org/d3.v4.min.js"></script>
+		<!-- start Mixpanel --><script type="text/javascript">(function(e,a){if(!a.__SV){var b=window;try{var c,l,i,j=b.location,g=j.hash;c=function(a,b){return(l=a.match(RegExp(b+"=([^&]*)")))?l[1]:null};g&&c(g,"state")&&(i=JSON.parse(decodeURIComponent(c(g,"state"))),"mpeditor"===i.action&&(b.sessionStorage.setItem("_mpcehash",g),history.replaceState(i.desiredHash||"",e.title,j.pathname+j.search)))}catch(m){}var k,h;window.mixpanel=a;a._i=[];a.init=function(b,c,f){function e(b,a){var c=a.split(".");2==c.length&&(b=b[c[0]],a=c[1]);b[a]=function(){b.push([a].concat(Array.prototype.slice.call(arguments,
+0)))}}var d=a;"undefined"!==typeof f?d=a[f]=[]:f="mixpanel";d.people=d.people||[];d.toString=function(b){var a="mixpanel";"mixpanel"!==f&&(a+="."+f);b||(a+=" (stub)");return a};d.people.toString=function(){return d.toString(1)+".people (stub)"};k="disable time_event track track_pageview track_links track_forms register register_once alias unregister identify name_tag set_config reset people.set people.set_once people.increment people.append people.union people.track_charge people.clear_charges people.delete_user".split(" ");
+for(h=0;h<k.length;h++)e(d,k[h]);a._i.push([b,c,f])};a.__SV=1.2;b=e.createElement("script");b.type="text/javascript";b.async=!0;b.src="undefined"!==typeof MIXPANEL_CUSTOM_LIB_URL?MIXPANEL_CUSTOM_LIB_URL:"file:"===e.location.protocol&&"//cdn.mxpnl.com/libs/mixpanel-2-latest.min.js".match(/^\/\//)?"https://cdn.mxpnl.com/libs/mixpanel-2-latest.min.js":"//cdn.mxpnl.com/libs/mixpanel-2-latest.min.js";c=e.getElementsByTagName("script")[0];c.parentNode.insertBefore(b,c)}})(document,window.mixpanel||[]);
+mixpanel.init("820efe56d9e46580ce385fd441ceb6a2");</script><!-- end Mixpanel -->
+
+		<style type="text/css">
+			form {
+				min-height: 3em;
+				margin-left: auto;
+				margin-right: auto;
+				padding-top: 2.5em;
+				text-align: center;
+			}
+
+			#answers {
+				text-align: center;
+			}
+			#answers > ul {
+				text-align: left;
+				display: inline-block;
+				list-style: none;
+			}
+			#answers > ul > li {
+				font-size: 1.2em;
+				padding-top: .4em;
+			}
+			.lessThan {
+				color: red;
+			}
+			.greaterThan {
+				color: green;
+			}
+		</style>
+	</head>
+
+	<body>
+		<script type="text/javascript">
+
+			// Reduce a fraction by finding the Greatest Common Divisor and dividing by it.
+			// stolen from: https://stackoverflow.com/questions/4652468/is-there-a-javascript-function-that-reduces-a-fraction#4652513
+			function reduce(numerator,denominator){
+			  var gcd = function gcd(a,b){
+			    return b ? gcd(b, a%b) : a;
+			  };
+			  gcd = gcd(numerator,denominator);
+			  return [numerator/gcd, denominator/gcd];
+			}
+
+			function Reduce(numerator, denominator)
+			{
+				var reduced = reduce(numerator, denominator);
+
+				return reduced[0]+"/"+reduced[1];
+			}
+
+			function GetNearest(measurement, divisor)
+			{
+				if((measurement == 0) || (divisor == 0)) {
+					return -1;
+				}
+
+				var prev_frac  = 0.0;
+				var next_frac  = 0.0;
+				var prev_count = 0;
+				var next_count = 0;
+				var increment  = (1.0 / divisor);
+
+				while(next_frac < measurement) {
+					next_count++;
+					next_frac = next_frac + increment;
+				}
+
+				if((measurement / next_frac) == 1) {
+					prev_frac  = next_frac;
+					prev_count = next_count;
+				} else {
+					prev_frac  = (next_frac - increment);
+					prev_count = next_count - 1;
+				}
+
+				return [prev_frac, next_frac, Reduce(prev_count, divisor), Reduce(next_count, divisor)];
+			}
+
+			function Sort(myMap)
+			{
+				var tempMap   = new Map();
+				var resultMap = new Map();
+
+				// myMap should be in format: { 1:[a,b,c,d], 2:[e,f,g,h], ..., 9, -1 };
+
+				for (var [key, value] of myMap) {
+					// make sure our entry is valid
+					if(value != -1) {
+						// only store unique
+						if(!(tempMap.has(value[0]))) {
+							tempMap.set(value[0], value[2]);
+						}
+						if(!(tempMap.has(value[1]))) {
+							tempMap.set(value[1], value[3]);
+						}
+					} else {
+						console.log(key + " is -1");
+					}
+				}
+
+				var tempKeys = [];
+				for(var [key, value] of tempMap) {
+					tempKeys.push(key);
+				}
+				tempKeys.sort();
+
+				for(var key of tempKeys) {
+					resultMap.set(key, tempMap.get(key));
+				}
+
+				return resultMap;
+			}
+
+			function PrintResult(print_here, raw_num, whole_num, scale_min, scale_max, answers_map)
+			{
+
+				var header = whole_num +
+				            "                                                               " + (whole_num+1) + "\n";
+
+				var ruler = "|              1/4             1/2             3/4              |\n"+
+							"|      1/8      |      3/8      |      5/8      |      7/8      |\n" +
+							"|       |       |       |       |       |       |       |       |\n" +
+							"|   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |\n" +
+							"| | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | |\n";
+
+				var marker = " ";
+
+				for(var i=0.0; i<=32.0; i++){
+					if(answers_map.has((i/32.0))) {
+						marker += "* ";
+					} else {
+						marker += "  ";
+					}
+				}
+
+				print_here.innerHTML = "<pre>\n" + header + ruler + marker + "</pre>\n";
+			}
+
+			function Convert()
+			{
+				var input = convert.elements["input_measurement"].value;
+
+				var input_frac  = input % 1;
+
+				var divisors = new Map();
+
+				mixpanel.track("Convert.");
+
+				divisors.set(32, -1);
+				divisors.set(16, -1);
+				divisors.set(8, -1);
+				divisors.set(4, -1);
+
+				// Get all our
+				for (var [key, value] of divisors) {
+					divisors.set(key, GetNearest(input_frac, key));
+				}
+
+				var answerMap = Sort(divisors);
+
+				var answer_block = document.getElementById("answers");
+
+				PrintResult(answer_block, input, (input - input_frac), 0, 1, answerMap);
+
+				// answer_block.innerHTML =  "";
+				// for (var [key, value] of answerMap) {
+				// 	if(key < input_frac) { 
+				// 		answer_block.innerHTML += "\t\t<li class=\"lessThan\">"    + value + " : " + key + "</li>\n";
+				// 	} else {
+				// 		answer_block.innerHTML += "\t\t<li class=\"greaterThan\">" + value + " : " + key + "</li>\n";
+				// 	}
+				// }
+				
+				return false;
+			}
+		</script>
+		<form name="convert" onSubmit="return Convert()">
+			<input type="number" step="any" name="input_measurement">
+			<button type="submit">Submit</button>
+		</form>
+		<div id="answers">
+			
+		</div>
+	</body>
+</html>
