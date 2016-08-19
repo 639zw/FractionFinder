@@ -226,10 +226,13 @@
 				PrintResult(answer_block, input, (input - input_frac), 0, 1, answerMap);
 
 				var answerTable = document.getElementById("answerTable");
+				answerTable.innerHTML = "";
 				for( var [key, value] of answerMap) {
 					answerTable.innerHTML += "<div class=\"row\">\n";
 					if(key == 0) {
 						answerTable.innerHTML += "<div class=\"button lt\">\n" + (input - input_frac);
+					} else if (key == 1) {
+						answerTable.innerHTML += "<div class=\"button gt\">\n" + ((input - input_frac) + 1);
 					} else {
 						if(key < input_frac) {
 							answerTable.innerHTML += "<div class=\"button lt\">\n" + (input - input_frac) + " " + value;
