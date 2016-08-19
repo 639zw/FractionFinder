@@ -65,6 +65,14 @@
 				background-color: rgb(232, 251, 226);
 				position: absolute;
 			}
+			.lt {
+				color: red;
+				background-color: rgb(253, 210, 189);
+			}
+			.gt {
+				color: green;
+				background-color: rgb(232, 251, 226);
+			}
 		</style>
 
 	<!-- start Mixpanel --><script type="text/javascript">(function(e,a){if(!a.__SV){var b=window;try{var c,l,i,j=b.location,g=j.hash;c=function(a,b){return(l=a.match(RegExp(b+"=([^&]*)")))?l[1]:null};g&&c(g,"state")&&(i=JSON.parse(decodeURIComponent(c(g,"state"))),"mpeditor"===i.action&&(b.sessionStorage.setItem("_mpcehash",g),history.replaceState(i.desiredHash||"",e.title,j.pathname+j.search)))}catch(m){}var k,h;window.mixpanel=a;a._i=[];a.init=function(b,c,f){function e(b,a){var c=a.split(".");2==c.length&&(b=b[c[0]],a=c[1]);b[a]=function(){b.push([a].concat(Array.prototype.slice.call(arguments,
@@ -185,10 +193,10 @@
 					}
 				}
 
-				print_here.innerHTML = "<pre class=\"ruler\">\n" + header + ruler + "</pre>\n";
+				print_here.innerHTML =  "<pre class=\"ruler\">\n"     + header + ruler + "</pre>\n";
+				print_here.innerHTML += "<pre class=\"lessThan\">"    + before_marker  + "</pre>";
+				print_here.innerHTML += "<pre class=\"greaterThan\">" + after_marker   + "</pre>\n";
 
-				print_here.innerHTML += "<pre class=\"lessThan\">"    + before_marker + "</pre>";
-				print_here.innerHTML += "<pre class=\"greaterThan\">" +  after_marker + "</pre>\n";
 			}
 
 			function Convert()
@@ -217,6 +225,22 @@
 
 				PrintResult(answer_block, input, (input - input_frac), 0, 1, answerMap);
 
+				var answerTable = document.getElementById("answerTable");
+				for( var [key, value] of answerMap) {
+					answerTable.innerHTML += "<div class=\"row\">\n";
+					if(key == 0) {
+						answerTable.innerHTML += "<div class=\"button lt\">\n" + (input - input_frac);
+					} else {
+						if(key < input_frac) {
+							answerTable.innerHTML += "<div class=\"button lt\">\n" + (input - input_frac) + " " + value;
+						} else {
+							answerTable.innerHTML += "<div class=\"button gt\">\n" + (input - input_frac) + " " + value;
+						}
+					}
+
+					answerTable.innerHTML += "</div>\n</div>\n";
+				}
+
 				// answer_block.innerHTML =  "";
 				// for (var [key, value] of answerMap) {
 				// 	if(key < input_frac) { 
@@ -243,6 +267,9 @@
 				<div id="answers">
 					
 				</div>
+			</div>
+			<div style="text-align:center;" id="answerTable">
+				
 			</div>
 		</div>
 	</body>
